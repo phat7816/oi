@@ -1,0 +1,104 @@
+-- Orion Library
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+
+-- Window
+local Window = OrionLib:MakeWindow({
+	Name = "Universal Orion Hub",
+	HidePremium = false,
+	SaveConfig = true,
+	ConfigFolder = "UniversalHub"
+})
+
+-- ======================
+-- MAIN TAB
+-- ======================
+local MainTab = Window:MakeTab({
+	Name = "Main",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+MainTab:AddButton({
+	Name = "Notify Test",
+	Callback = function()
+		OrionLib:MakeNotification({
+			Name = "Orion Hub",
+			Content = "UI is working correctly!",
+			Time = 3
+		})
+	end
+})
+
+-- ======================
+-- PLAYER TAB
+-- ======================
+local PlayerTab = Window:MakeTab({
+	Name = "Player",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local humanoid = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
+
+PlayerTab:AddSlider({
+	Name = "WalkSpeed",
+	Min = 16,
+	Max = 50,
+	Default = 16,
+	Increment = 1,
+	Callback = function(Value)
+		humanoid.WalkSpeed = Value
+	end
+})
+
+PlayerTab:AddSlider({
+	Name = "JumpPower",
+	Min = 50,
+	Max = 150,
+	Default = 50,
+	Increment = 5,
+	Callback = function(Value)
+		humanoid.JumpPower = Value
+	end
+})
+
+-- ======================
+-- VISUAL TAB
+-- ======================
+local VisualTab = Window:MakeTab({
+	Name = "Visual",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+VisualTab:AddToggle({
+	Name = "Fullbright",
+	Default = false,
+	Callback = function(state)
+		if state then
+			game.Lighting.Brightness = 3
+			game.Lighting.ClockTime = 14
+		else
+			game.Lighting.Brightness = 1
+			game.Lighting.ClockTime = 12
+		end
+	end
+})
+
+-- ======================
+-- SETTINGS TAB
+-- ======================
+local SettingsTab = Window:MakeTab({
+	Name = "Settings",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+SettingsTab:AddButton({
+	Name = "Destroy UI",
+	Callback = function()
+		OrionLib:Destroy()
+	end
+})
+
+OrionLib:Init()
