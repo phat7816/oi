@@ -1,0 +1,97 @@
+-- Đảm bảo game load hoàn toàn trước khi chạy UI
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+-- Load Serotonin Library (Bản link dự phòng ổn định)
+local Serotonin = loadstring(game:HttpGet("https://raw.githubusercontent.com/zuuS_Bes/Serotonin/main/Serotonin.lua"))()
+
+-- Khởi tạo Window
+local Window = Serotonin:CreateWindow("RAKOOF HUB", "Mobile & PC", Color3.fromRGB(170, 0, 255))
+
+-- ================= TAB MAIN =================
+local MainTab = Window:CreateTab("Main")
+
+MainTab:CreateToggle("Auto Farm", function(state)
+    _G.AutoFarm = state
+    task.spawn(function()
+        while _G.AutoFarm do
+            print("Đang farm...")
+            task.wait(0.1)
+        end
+    end)
+end)
+
+-- ================= TAB ESP =================
+local EspTab = Window:CreateTab("ESP")
+
+-- FullBright
+EspTab:CreateToggle("FullBright", function(state)
+    _G.FullBright = state
+    if _G.FullBright then
+        game:GetService("Lighting").Brightness = 2
+        game:GetService("Lighting").GlobalShadows = false
+        game:GetService("Lighting").OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+    else
+        game:GetService("Lighting").Brightness = 1
+        game:GetService("Lighting").GlobalShadows = true
+        game:GetService("Lighting").OutdoorAmbient = Color3.fromRGB(127, 127, 127)
+    end
+end)
+
+-- ESP Rakoof (Highlight + Tracer)
+EspTab:CreateToggle("ESP Rakoof", function(state)
+    _G.EspRakoof = state
+    task.spawn(function()
+        while _G.EspRakoof do
+            for _, v in pairs(workspace:GetChildren()) do
+                if v.Name == "Rakoof" and v:FindFirstChild("HumanoidRootPart") then
+                    -- Highlight
+                    if not v:FindFirstChild("Highlight") then
+                        local hl = Instance.new("Highlight", v)
+                        hl.FillColor = Color3.fromRGB(255, 0, 0)
+                    end
+                    -- Bạn có thể thêm code Tracer (Drawing API) tại đây nếu Executor hỗ trợ
+                end
+            end
+            task.wait(2)
+        end
+    end)
+end)
+
+-- ESP Items
+EspTab:CreateToggle("ESP Items", function(state)
+    _G.EspItems = state
+    task.spawn(function()
+        while _G.EspItems do
+            for _, v in pairs(workspace:GetChildren()) do
+                if (v:IsA("Tool") or v:FindFirstChild("Handle")) and not v:FindFirstChild("Highlight") then
+                    local hl = Instance.new("Highlight", v)
+                    hl.FillColor = Color3.fromRGB(0, 255, 0)
+                end
+            end
+            task.wait(2)
+        end
+    end)
+end)
+
+-- ================= TAB MISC =================
+local MiscTab = Window:CreateTab("Misc")
+
+MiscTab:CreateSlider("WalkSpeed", 16, 250, function(value)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+end)
+
+MiscTab:CreateButton("Infinite Jump", function()
+    game:GetService("UserInputService").JumpRequest:Connect(function()
+        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end)
+end)
+
+-- ================= TAB SETTINGS =================
+local SettingsTab = Window:CreateTab("Settings")
+
+SettingsTab:CreateButton("Destroy UI", function()
+    game:GetService("CoreGui"):FindFirstChild("Serotonin"):Destroy()
+end)
+
+-- Thông báo
+Serotonin:Notify("Rakoof Hub", "Script loaded thành công!", 3)
