@@ -1,32 +1,29 @@
--- Script tối ưu: Sửa lỗi Texture và ép Font Arcade
-local targetFont = Enum.Font.Arcade
+-- Roblox Arcade Font Executor (Safe Version)
+local targetFont = Enum.Font.Arcade -- Bạn có thể đổi thành Enum.Font.PressStart2P
 
-local function fixAndApply(obj)
-    pcall(function()
-        -- 1. Nếu là Text: Đổi sang Arcade
-        if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+local function applyFont(obj)
+    -- Chỉ tác động nếu đối tượng có thuộc tính Font (Tránh làm lỗi Image)
+    if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+        pcall(function()
             obj.Font = targetFont
-        end
-        
-        -- 2. Nếu là Image: Ép nạp lại Texture nếu bị trống
-        if obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-            if obj.Image == "" or not obj.IsLoaded then
-                -- Ép buộc cập nhật lại hiển thị
-                local currentImg = obj.Image
-                obj.Image = ""
-                task.wait()
-                obj.Image = currentImg
-            end
-        end
-    end)
+            
+            -- Tinh chỉnh để chữ Arcade dễ nhìn hơn
+            obj.TextStrokeTransparency = 0.8 -- Viền nhẹ để nổi bật
+            obj.RichText = true -- Giữ nguyên định dạng màu sắc của game
+        end)
+    end
 end
 
--- Chạy quét toàn bộ game
+-- Quét toàn bộ UI hiện có (Bao gồm cả CoreGui nếu executor hỗ trợ)
 for _, v in ipairs(game:GetDescendants()) do
-    fixAndApply(v)
+    applyFont(v)
 end
 
--- Theo dõi các UI mới xuất hiện
-game.DescendantAdded:Connect(fixAndApply)
+-- Lắng nghe UI mới (như bảng Chat hoặc Menu mới mở)
+game.DescendantAdded:Connect(function(v)
+    -- Đợi một chút để UI load xong nội dung rồi mới đổi font
+    task.wait(0.1) 
+    applyFont(v)
+end)
 
-print("Đã thực thi: Font Arcade + Fix Texture")
+print("Arcade Font Loaded - Texture Safe!")
