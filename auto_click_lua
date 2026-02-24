@@ -1,0 +1,91 @@
+local UIS = game:GetService("UserInputService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local GuiService = game:GetService("GuiService")
+
+-- 1. TẠO GUI
+local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+ScreenGui.Name = "FinalFixAutoClicker"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true -- Đảm bảo UI khớp với hệ tọa độ màn hình
+
+-- 2. VÒNG TRÒN MỤC TIÊU (TARGET)
+local TargetCircle = Instance.new("Frame")
+TargetCircle.Size = UDim2.new(0, 60, 0, 60)
+TargetCircle.Position = UDim2.new(0.5, -30, 0.4, -30)
+TargetCircle.BackgroundTransparency = 0.8
+TargetCircle.BorderColor3 = Color3.fromRGB(255, 255, 0) -- Màu vàng
+TargetCircle.BorderSizePixel = 2
+TargetCircle.Active = true
+TargetCircle.Draggable = true 
+TargetCircle.Parent = ScreenGui
+
+local TargetCorner = Instance.new("UICorner")
+TargetCorner.CornerRadius = UDim.new(1, 0)
+TargetCorner.Parent = TargetCircle
+
+-- Chấm đỏ xác định tâm tuyệt đối (Dùng để căn chỉnh)
+local CenterDot = Instance.new("Frame")
+CenterDot.Size = UDim2.new(0, 6, 0, 6)
+CenterDot.Position = UDim2.new(0.5, -3, 0.5, -3)
+CenterDot.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CenterDot.BorderSizePixel = 0
+CenterDot.Parent = TargetCircle
+
+-- 3. NÚT TOGGLE (BẬT/TẮT)
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 110, 0, 45)
+ToggleBtn.Position = UDim2.new(0, 20, 0.8, 0)
+ToggleBtn.Text = "CHƯA BẬT"
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.Draggable = true
+ToggleBtn.Parent = ScreenGui
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 10)
+BtnCorner.Parent = ToggleBtn
+
+-- 4. BIẾN ĐIỀU KHIỂN
+local isRunning = false
+local clickDelay = 0.05 -- Tốc độ click (có thể chỉnh lại)
+
+-- 5. HÀM THỰC THI (FIX LỆCH 100%)
+local function runAutoClick()
+    while isRunning do
+        -- Lấy khoảng thụt lề của hệ thống (Topbar)
+        local inset = GuiService:GetGuiInset()
+        
+        -- Tính toán tọa độ tâm chính xác
+        -- AbsolutePosition đã bao gồm Inset, nên ta phải cộng thêm Inset để khớp với tọa độ chuột thực tế
+        local centerX = TargetCircle.AbsolutePosition.X + (TargetCircle.AbsoluteSize.X / 2)
+        local centerY = TargetCircle.AbsolutePosition.Y + (TargetCircle.AbsoluteSize.Y / 2)
+        
+        -- Nếu tọa độ vẫn lệch trên một số máy, ta cộng thêm inset:
+        local finalX = centerX
+        local finalY = centerY + inset.Y
+        
+        -- Gửi lệnh click
+        VirtualInputManager:SendMouseButtonEvent(finalX, finalY, 0, true, game, 0)
+        VirtualInputManager:SendMouseButtonEvent(finalX, finalY, 0, false, game, 0)
+        
+        task.wait(clickDelay)
+    end
+end
+
+-- 6. XỬ LÝ CLICK NÚT
+ToggleBtn.MouseButton1Click:Connect(function()
+    isRunning = not isRunning
+    if isRunning then
+        ToggleBtn.Text = "ĐANG CLICK"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 0) -- Xanh lá
+        TargetCircle.Draggable = false -- Khóa lại để tránh lệch khi đang chạy
+        TargetCircle.BorderColor3 = Color3.fromRGB(255, 0, 0) -- Viền đỏ
+        runAutoClick()
+    else
+        ToggleBtn.Text = "CHƯA BẬT"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        TargetCircle.Draggable = true -- Mở khóa để di chuyển
+        TargetCircle.BorderColor3 = Color3.fromRGB(255, 255, 0)
+    end
+end)
